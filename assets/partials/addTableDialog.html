@@ -37,9 +37,9 @@
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" onclick="saveData();">Save changes</button>
 	</div>
-		<div class="alert alert-info" role="alert">
+		<!--div class="alert alert-info" role="alert">
 		<small>Note: Write default value exactly as it appears in code. Add quotes for String, ex: "foo"</small>
-		</div>
+		</div-->
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -72,6 +72,28 @@ function saveData() {
 	}
 	
 	table.name = $('#tableName').text();
+	
+	//remove old endpoints
+	window.oldrefs = {};
+	if ($('#editMode').val() == 'edit') {
+		jsPlumb.detachAllConnections($('#tbl' + table.name + " .table"));
+		window.oldrefs = {};
+		$.each(tables[table.name].fields, function(k,v) {
+			//preserve existing relations
+			window.oldrefs[v.name] = {};
+			window.oldrefs[v.name]['foreign'] = v.foreign;
+			window.oldrefs[v.name]['ref'] = v.ref;
+			console.log('oldref backing up',v.name,v.foreign,v.ref);
+			
+			//console.log(v.ep);
+			//elist1 = jsPlumb.selectEndpoints({target:$("#tbl" + tsa[0] +  " div[ffname='" + tsa[0] + "." + tsa[1] +  "']")});
+			
+			//jsPlumb.deleteEndpoint(v.ep);
+			//console.log('deleted ep for',v.name);
+		});
+		jsPlumb.empty($('#tbl' + table.name + " .table"));
+	}
+	
 	table.fields={};
 	//First update the data model!
 	$('.fieldRow').each(function(index) {
@@ -81,7 +103,7 @@ function saveData() {
 		console.log($(this).find(".fieldName").text(), 'primary: ' + $(this).find(".hfieldPrimary").text());
 		console.log($(this).find(".fieldName").text(), 'unique: ' + $(this).find(".hfieldUnique").text());
 		
-		table.addField({ 
+		table.fields[$(this).find(".fieldName").text()] = new Field({ 
 			name: $(this).find(".fieldName").text(),
 			type: $(this).find(".fieldType").text(),
 			size: $(this).find(".hfieldSize").text(),
@@ -90,65 +112,20 @@ function saveData() {
 			defaultValue:  (defaultValue=="" ? null : defaultValue)
 			});
 	});
+	
+	
 	tables[table.name] = table;
 	$("#addTableDialog").modal('hide');
 	
 	
 	//Now Build the new panel!
-	if ($('#editMode').val() == "add") {
-		$.get("assets/partials/table.html?time=" + (new Date()).getTime(), function(data){
-			$('.canvas').append(data.format(table.name));
-			setThePanel(table, $('#editMode').val());
-		});
-	}
-	else {
-		setThePanel(table, $('#editMode').val());
-	}
+	createThePanel(table, $('#editMode').val(), null);
 }
 
-function setThePanel(table, mode) {
-		html = '';
-		if (mode=='edit') {
-			$('#tbl' + table.name + " .table tr").remove();
-		}
-		
-		$.each(table.fields, function(key, field) {
-			html += "<tr>";
-			html += "<td>" + field.name + "</td>";
-			html += "<td>" + field.type + (field.size>0 ? '(' + field.size + ')' : '') + "</td>";
-			html += "<td>" + (field.primaryKey ? 'primary' : '') + (field.unique ? 'unique' : '') + "</td>";
-			html += "</tr>";
-		});
-		$('#tbl' + table.name + " .table").append(html);
-		
-		$("#tbl" + table.name + " tr").on('mouseover', function(){
-			/*if ($(this).text().indexOf('primary') >=0) {
-				console.log('im primary');
-				$(this).css({'cursor': 'pointer'});
-			}*/
-		});
-		console.log('added event listener');
-		
-		if (mode=='add') {
-			if (window.lastPos == undefined) {
-				window.lastPos = {'x':0, 'y':0};
-			}
-			else {
-				window.lastPos.x += 40;
-				window.lastPos.y += 40;
-			}
 
-			$('#tbl' + table.name).css({
-				'left': window.lastPos.x + "px",
-				'top': window.lastPos.y + "px"
-			});
-				alert("Table added!");
-		}
-		else {
-				alert("Table updated!");
-		}
-}
-
+/**
+* Creates a new field from the input boxes and adds to the display.
+*/
 function addField()
 {
 	if ($("#fieldSize").val() =="" || $("#fieldSize").attr('disabled')) $("#fieldSize").val(0);
@@ -188,7 +165,7 @@ function addField()
 	html += "<td class='hidden hfieldDefaultValue'>" + $("#fieldDefault").val()  + "</td>";
 	html += "<td class='hidden hfieldPrimary'>" + (isPrimary ? 'true' : '')  + "</td>";
 	html += "<td class='hidden hfieldUnique'>" + (isUnique ? 'true' : '')  + "</td>";
-	html += "<td class='delete'><button onclick='$(\"#" + $("#fieldName").val() + "\").remove();' title='Delete Field' class='btn btn-xs btn-danger'><span class='glyphicon glyphicon-remove'></span></button></td>";
+	html += "<td class='delete'><button onclick='tryToDelete(\"" + $("#fieldName").val() + "\")' title='Delete Field' class='btn btn-xs btn-danger'><span class='glyphicon glyphicon-remove'></span></button></td>";
 	html += "</tr>";
 	
 	$("#fields").append(html);
@@ -201,6 +178,27 @@ function addField()
 	$('#fieldUnique').removeAttr("checked");	
 
 	$("#fieldName").focus();
+}
+
+function tryToDelete(fieldName) {
+	//TODO: Check this is not working
+	for (conn in jsPlumb.getAllConnections()) {
+		var tname = $('#tableName').text();
+		var existing = tables[tname].fields[fieldName];
+		//if ($(conn.source).attr('ffname') == $("#tableName").text() + '.' + fieldName) {
+		if (existing!=undefined && existing.foreign != null) {
+			alert("This key is acting as a primary key in a relation. Please delete that relation first.");
+			return;
+		}
+		//else if ($(conn.target).attr('ffname') == $("#tableName").text() + '.' + fieldName) {
+		else if (existing!=undefined && existing.ref != null) {
+			alert("This key is acting as a foreign key in a relation. Please delete that relation first.");
+			return;
+		}
+	}
+	//jsPlumb.remove($('#' + fieldName));
+	//jsPlumb.remove('#' + fieldName);
+	$('#' + fieldName).remove();
 }
 </script>
 
