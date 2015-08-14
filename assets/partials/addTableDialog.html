@@ -9,10 +9,13 @@
       <div class="modal-body form-inline">
         <input autofocus="true" id="fieldName" style="width:110px;" class="form-control" type="text" placeholder="Field name"></input>
         <select id="fieldType" class="form-control" type="text" onchange="if ($('#fieldType').val()!='String' && $('#fieldType').val()!='Text') $('#fieldSize').attr('disabled',''); else $('#fieldSize').removeAttr('disabled');">
-			<option value="String">String</option>
 			<option value="Text">Text</option>
+			<option value="LONGTEXT">mysql.LONGTEXT</option>
+			<option value="String">String</option>
 			<option value="Date">Date</option>
 			<option value="Integer">Integer</option>
+			<option value="BIGINT">mysql.BIGINT</option>
+			<option value="BIGINT(unsigned=True)">mysql.BIGINT(unsigned)</option>
 			<option value="Float">Float</option>
 		</select>
         <input id="fieldSize" style="width:70px;" class="form-control" type="number" min="0" placeholder="size" value=""></input>
@@ -37,9 +40,9 @@
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" onclick="saveData();">Save changes</button>
 	</div>
-		<!--div class="alert alert-info" role="alert">
-		<small>Note: Write default value exactly as it appears in code. Add quotes for String, ex: "foo"</small>
-		</div-->
+		<div class="alert alert-info" role="alert">
+		<small>Note: Use <kbd>tab</kbd> key to navigate through the widgets.</small>
+		</div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -48,6 +51,10 @@
 //$("#fieldName").focus();
 document.getElementById("fieldName").focus();
 //console.log("Focussed");
+
+$("#addTableDialog").on('hidden.bs.modal', function(e){
+	console.log(this.data);
+});
 
 function saveData() {
 	if ($('.fieldRow').length==0) {
@@ -102,6 +109,7 @@ function saveData() {
 		var defaultValue = $(this).find(".hfieldDefaultValue").text();
 		console.log($(this).find(".fieldName").text(), 'primary: ' + $(this).find(".hfieldPrimary").text());
 		console.log($(this).find(".fieldName").text(), 'unique: ' + $(this).find(".hfieldUnique").text());
+		console.log("DATA_TYPE",$(this).find(".fieldType").val());
 		
 		table.fields[$(this).find(".fieldName").text()] = new Field({ 
 			name: $(this).find(".fieldName").text(),

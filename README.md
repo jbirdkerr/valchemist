@@ -1,8 +1,11 @@
-## Visual Alchemist
+# Visual Alchemist
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
 **Visual Alchemist** is a web app to seamlessly create `sqlalchemy` models by dragging/dropping objects in a canvas.
 
-![Screenshot](https://github.com/prahladyeri/valchemist/raw/master/img/screenRelation.png)
+![Screenshot](https://github.com/prahladyeri/valchemist/raw/master/img/screenComposite.png)
 
 Features:
 
@@ -10,28 +13,23 @@ Features:
 - Joins and table-movement on canvas by simple drag/drop.
 - Saves the canvas in local data-store (HTML5-enabled browsers only).
 - Ability to export/import the canvas to/from `JSON` files.
+- Support for composite primary keys.
 
-### Demo
+## Demo
 
 Visit [http://valchemist-inn.rhcloud.com](http://valchemist-inn.rhcloud.com) to see a live demo of how this app works.
 
-### Installation and Usage
+## Installation and Usage
 
-Visual Alchemist is presently a pure html app, so you can simply copy the github repo and host it. However, Flask support is also added as I intend to add more backend-specific features soon.
+Visual Alchemist is presently a pure html app, so you can simply copy the github repo and host it (with `index.html` as default). However, Flask support is also added as I intend to add more backend-specific features soon.
 
-To run VA in Flask, you'll need to install the minimum requirements via the requirements.txt file. Run the following commands to install requirements in a virtual environment from within the application root directory (assuming you have pip and virtualenv installed): 
+## Donating
 
-    virtualenv venv
-    source venv/bin/activate
-    pip install -r
-    deactivate
+Support this project via Gratipay.
 
-To run the app, go to the application root directory and type:
-
-    venv/bin/python valchemist.py
-    	
+[![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.png)](https://gratipay.com/prahladyeri/)
 	
-### Contribution
+## Contribution
 
 I need contributions in the following areas:
 - **Front-end Testing:** To test the app across various Browser/OS environments to make sure it runs all-right.
